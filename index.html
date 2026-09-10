@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a101b" />
+  <meta name="description" content="Historia: Europe 1936 — an open-ended alternate-history grand strategy sandbox." />
+  <title>Historia: Europe 1936</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <noscript><div class="fatal">This game requires JavaScript.</div></noscript>
+
+  <div id="boot-screen" class="boot-screen">
+    <div class="boot-card">
+      <div class="eyebrow">ALTERNATE HISTORY SANDBOX</div>
+      <h1>HISTORIA: EUROPE 1936</h1>
+      <p>Lead a nation. Type what you want to do. Advance time. The world reacts.</p>
+      <button id="boot-button" class="primary huge">ENTER</button>
+      <small id="boot-status">Static build • no server • GitHub Pages ready</small>
+    </div>
+  </div>
+
+  <div id="setup" class="setup hidden">
+    <div class="setup-shell">
+      <div class="setup-title">
+        <div class="eyebrow">NEW CAMPAIGN</div>
+        <h2>Shape 1936 before history shapes you.</h2>
+      </div>
+
+      <section class="setup-step">
+        <div class="stepnum">1</div>
+        <div>
+          <h3>Simulation mode</h3>
+          <div class="choice-grid" id="mode-choices">
+            <button class="choice selected" data-mode="historical">
+              <b>Historical Pressure</b>
+              <span>AI follows national interests and period pressures, but history can diverge.</span>
+            </button>
+            <button class="choice" data-mode="sandbox">
+              <b>Open Sandbox</b>
+              <span>Countries remain plausible, but are more willing to pursue ahistorical paths.</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="setup-step">
+        <div class="stepnum">2</div>
+        <div>
+          <h3>Difficulty</h3>
+          <div class="choice-grid three" id="difficulty-choices">
+            <button class="choice" data-difficulty="relaxed"><b>Relaxed</b><span>More forgiving.</span></button>
+            <button class="choice selected" data-difficulty="standard"><b>Standard</b><span>Balanced simulation.</span></button>
+            <button class="choice" data-difficulty="hard"><b>Hard</b><span>AI resists aggressively.</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="setup-step">
+        <div class="stepnum">3</div>
+        <div class="country-picker-wrap">
+          <h3>Choose your country</h3>
+          <select id="country-select" aria-label="Choose country"></select>
+          <div id="country-preview" class="country-preview"></div>
+        </div>
+      </section>
+
+      <div class="setup-footer">
+        <button id="start-game" class="primary huge">START GAME</button>
+        <div id="setup-error" class="error"></div>
+      </div>
+    </div>
+  </div>
+
+  <main id="game" class="game hidden">
+    <header class="topbar">
+      <div class="brand">
+        <b>HISTORIA</b><span>EUROPE 1936</span>
+      </div>
+      <div class="top-center">
+        <div id="date-label">1 JAN 1936</div>
+        <div id="tension-label">World Tension 8%</div>
+      </div>
+      <div class="top-actions">
+        <button id="save-btn" class="ghost">Save</button>
+        <button id="load-btn" class="ghost">Load</button>
+        <button id="new-btn" class="ghost danger-lite">New</button>
+      </div>
+    </header>
+
+    <div class="game-layout">
+      <aside class="sidebar leftbar">
+        <div class="country-header">
+          <div id="player-flag" class="flag">DE</div>
+          <div>
+            <h2 id="player-name">German Reich</h2>
+            <p id="player-leader">Adolf Hitler</p>
+          </div>
+        </div>
+
+        <section>
+          <h4>National State</h4>
+          <div id="stats"></div>
+        </section>
+
+        <section>
+          <h4>Strategic Posture</h4>
+          <div id="posture"></div>
+        </section>
+
+        <section>
+          <h4>Relations</h4>
+          <div id="relations"></div>
+        </section>
+      </aside>
+
+      <section class="map-panel">
+        <div class="map-toolbar">
+          <button id="zoom-in" class="mapbtn">＋</button>
+          <button id="zoom-out" class="mapbtn">−</button>
+          <button id="reset-map" class="mapbtn">Reset</button>
+          <div id="selected-country-label" class="map-selection">Click a country</div>
+        </div>
+
+        <svg id="world-map" viewBox="0 0 1200 760" role="img" aria-label="Stylized political map of Europe in 1936">
+          <rect width="1200" height="760" class="ocean"/>
+          <g id="map-layer"></g>
+          <g id="city-layer"></g>
+          <g id="front-layer"></g>
+        </svg>
+
+        <div class="map-bottom">
+          <div class="map-legend">
+            <span><i class="dot player"></i>Your country</span>
+            <span><i class="dot war"></i>At war</span>
+            <span><i class="dot tension"></i>Flashpoint</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar rightbar">
+        <div class="tabs">
+          <button class="tab active" data-tab="events">Events</button>
+          <button class="tab" data-tab="intel">Intel</button>
+          <button class="tab" data-tab="diplo">Diplomacy</button>
+        </div>
+        <div id="events-tab" class="tabpane active"><div id="event-feed" class="feed"></div></div>
+        <div id="intel-tab" class="tabpane"><div id="intel-panel"></div></div>
+        <div id="diplo-tab" class="tabpane"><div id="diplo-panel"></div></div>
+      </aside>
+    </div>
+
+    <section class="command-deck">
+      <div class="command-main">
+        <div class="command-heading">
+          <div>
+            <span class="eyebrow">FREE-FORM ORDER</span>
+            <b>What does your government do?</b>
+          </div>
+          <div class="examples" id="example-actions"></div>
+        </div>
+
+        <textarea id="command-input" rows="3" placeholder="Example: Move troops into the Rhineland, but retreat if France responds militarily."></textarea>
+
+        <div class="command-controls">
+          <select id="advance-select" aria-label="Advance time">
+            <option value="3">Advance 3 days</option>
+            <option value="7" selected>Advance 1 week</option>
+            <option value="30">Advance 1 month</option>
+            <option value="90">Advance 3 months</option>
+          </select>
+          <button id="submit-order" class="primary">EXECUTE ORDER & ADVANCE</button>
+        </div>
+      </div>
+      <div class="turn-summary">
+        <span class="eyebrow">LAST TURN</span>
+        <div id="last-turn">Campaign initialized.</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="./game.js"></script>
+</body>
+</html>
