@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0e12">
+  <meta name="description" content="Historia: 1936 — alternate-history grand strategy sandbox">
+  <title>Historia: 1936</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<noscript><div class="fatal">JavaScript is required to play Historia: 1936.</div></noscript>
+
+<div id="app">
+  <header class="topbar">
+    <div class="logo">HISTORIA <span>1936</span></div>
+    <div class="dateBox" id="dateDisplay">1 January 1936</div>
+    <div class="worldTension" id="tensionDisplay">WORLD TENSION 5%</div>
+    <div id="alertBadge" class="alertBadge hidden">● MAJOR EVENT</div>
+    <div class="topSpacer"></div>
+    <div class="saveState" id="saveState">AUTOSAVE READY</div>
+    <button class="topBtn" id="rewindBtn">↶ Rewind</button>
+    <button class="topBtn" id="saveBtn">Save</button>
+    <button class="topBtn" id="loadBtn">Load</button>
+    <button class="topBtn" id="exportBtn">Export</button>
+    <button class="topBtn" id="importBtn">Import</button>
+    <button class="topBtn dangerLite" id="newBtn">New</button>
+    <input id="importFile" type="file" accept=".json,application/json" hidden>
+  </header>
+
+  <aside class="left">
+    <div class="countryHeader" id="countryHeader"></div>
+    <div class="tabs" id="leftTabs">
+      <button class="tab active" data-tab="actions">ACTIONS</button>
+      <button class="tab" data-tab="diplomacy">DIPLOMACY</button>
+      <button class="tab" data-tab="military">MILITARY</button>
+      <button class="tab" data-tab="state">STATE</button>
+      <button class="tab" data-tab="intel">INTEL</button>
+    </div>
+    <div id="panel"></div>
+  </aside>
+
+  <main class="center">
+    <div class="mapToolbar">
+      <button class="mapMode active" data-mapmode="political">POLITICAL</button>
+      <button class="mapMode" data-mapmode="relations">RELATIONS</button>
+      <button class="mapMode" data-mapmode="war">WAR</button>
+      <span class="toolbarDivider"></span>
+      <button class="mapMode" id="zoomIn">＋</button>
+      <button class="mapMode" id="zoomOut">−</button>
+      <button class="mapMode" id="resetMap">RESET</button>
+    </div>
+    <div class="mapStatus" id="mapStatus">1936 POLITICAL MAP • CLICK A COUNTRY FOR INTELLIGENCE</div>
+    <svg id="map" viewBox="0 0 1200 760" aria-label="Stylized political map">
+      <defs>
+        <filter id="mapShadow"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity=".35"/></filter>
+      </defs>
+      <rect width="1200" height="760" class="ocean"></rect>
+      <g id="mapViewport">
+        <g id="countryLayer"></g>
+        <g id="frontLayer"></g>
+        <g id="regionLayer"></g>
+        <g id="cityLayer"></g>
+        <g id="armyLayer"></g>
+      </g>
+    </svg>
+
+    <div class="selectionBox" id="selectionBox"></div>
+
+    <div class="timePanel">
+      <div class="timePanelTop">
+        <div>
+          <div class="tinyLabel">TIME CONTROL</div>
+          <div class="timeHint" id="timeHint">No pending interruption</div>
+        </div>
+        <button class="advance" id="advanceDefault">▶ ADVANCE 1 MONTH</button>
+      </div>
+      <div class="timeButtons">
+        <button data-days="7">1 WEEK</button>
+        <button data-days="30">1 MONTH</button>
+        <button data-days="90">3 MONTHS</button>
+        <button data-days="180">6 MONTHS</button>
+        <button data-days="365">1 YEAR</button>
+        <button id="continueBtn" disabled>CONTINUE</button>
+      </div>
+    </div>
+  </main>
+
+  <aside class="right">
+    <div class="timelineHeader">
+      <div class="timelineTitle">WORLD TIMELINE</div>
+      <div class="grow"></div>
+      <button class="filter active" data-filter="all">ALL</button>
+      <button class="filter" data-filter="war">WAR</button>
+      <button class="filter" data-filter="diplomacy">DIP</button>
+      <button class="filter" data-filter="economy">ECO</button>
+      <button class="filter" data-filter="intelligence">INTEL</button>
+    </div>
+    <div id="timeline"></div>
+    <div class="operationsHeader">
+      <span>ACTIVE WORLD</span>
+      <span id="activeCount">0</span>
+    </div>
+    <div id="operations"></div>
+  </aside>
+</div>
+
+<div class="modalBack" id="startModal">
+  <div class="modal">
+    <div class="modalHeader">
+      <div class="eyebrow">ALTERNATE HISTORY GRAND STRATEGY</div>
+      <h1>Historia: 1936</h1>
+      <p>
+        Choose a nation and rewrite history. Orders create persistent consequences:
+        soldiers leave factories, trade creates dependencies, diplomacy creates obligations,
+        governments remember betrayals, and rival states pursue their own plans.
+      </p>
+    </div>
+    <div class="setup">
+      <label>
+        <span class="heading">WORLD MODE</span>
+        <select id="modeChoice">
+          <option value="historical" selected>Historical Sandbox</option>
+          <option value="open">Open Sandbox</option>
+          <option value="chaos">Wild Alternate History</option>
+        </select>
+      </label>
+      <label>
+        <span class="heading">DIFFICULTY</span>
+        <select id="difficultyChoice">
+          <option value="forgiving">Historical / Forgiving</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+          <option value="ruthless">Ruthless</option>
+        </select>
+      </label>
+    </div>
+    <div class="countryGrid" id="countryGrid"></div>
+    <div class="startFooter">
+      <div class="selectedCountryText" id="selectedStartText">Germany selected</div>
+      <div class="startUtilityRow">
+        <button class="btn" id="continueSaveBtn">CONTINUE SAVED CAMPAIGN</button>
+        <button class="btn" id="importStartBtn">IMPORT SAVE</button>
+      </div>
+      <button class="startButton" id="startButton">START AS GERMANY</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./data.js"></script>
+<script src="./engine.js"></script>
+<script src="./ai.js"></script>
+<script src="./ui.js"></script>
+<script src="./main.js"></script>
+</body>
+</html>
